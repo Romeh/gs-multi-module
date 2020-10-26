@@ -1,0 +1,32 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+metadata:
+  name: continuous-java-kubernetes
+build:
+  tagPolicy:
+    gitCommit: {}
+  local:
+    push: false
+  artifacts:
+    - image: io.github.sample/spring-boot-jib
+      jib:
+        project: application
+        type: gradle
+        args:
+          - -Psync
+      context: .
+      sync:
+        auto: {}
+deploy:
+  kubeContext: minikube
+  helm:
+    releases:
+      - name: spring-boot-jib
+        chartPath: application/src/main/helm
+        namespace: default
+        valuesFiles:
+          - application/src/main/helm/values-local.yaml
+        artifactOverrides:
+          image: io.github.sample/spring-boot-jib
+        imageStrategy:
+          helm: {}    #  	image configuration uses the syntax IMAGE-NAME.repository=IMAGE-REPOSITORY, IMAGE-NAME.tag=IMAGE-TAG.

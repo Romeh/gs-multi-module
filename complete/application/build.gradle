@@ -1,15 +1,30 @@
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
-	api project(":library")
-
+	implementation project(":library")
+	//if (project.hasProperty('sync')) {
+	runtime 'org.springframework.boot:spring-boot-devtools'
+	//}
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	//runtime('org.hotswapagent:hotswap-agent-spring-plugin:1.4.1')
 }
 
 bootJar {
 	enabled = true
 }
 
+jib {
+	from {
+		image = 'azul/zulu-openjdk-alpine:8u222-jre'
+	}
+	to {
+		image = 'io.github.sample/spring-boot-jib:' + project.version
+	}
+	container {
+		mainClass = 'com.example.multimodule.application.DemoApplication'
+		jvmFlags = ['-XX:MaxMetaspaceSize=512m', '-Djava.security.egd=file:/dev/./urandom']
+		ports = ['5500','5005']
+	}
+}
